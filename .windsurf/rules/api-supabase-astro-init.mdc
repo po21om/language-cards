@@ -1,7 +1,6 @@
 ---
-description: 
-globs: 
 alwaysApply: false
+trigger: model_decision
 ---
 # Supabase Astro Initialization
 

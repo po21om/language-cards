@@ -1,7 +1,6 @@
 ---
-description: 
-globs: 
 alwaysApply: false
+trigger: glob
 ---
 # Database: Create migration
 
