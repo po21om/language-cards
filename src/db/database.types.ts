@@ -226,6 +226,12 @@ export type Database = {
       }
     }
     Functions: {
+      delete_user: {
+        Args: {
+          user_id: string
+        }
+        Returns: undefined
+      }
       purge_old_deleted_flashcards: { Args: never; Returns: number }
     }
     Enums: {
