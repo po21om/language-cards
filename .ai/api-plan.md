@@ -217,6 +217,7 @@ The API is organized around the following main resources, each corresponding to 
   }
 }
 ```
+**Note:** `user_id` is not included in responses for security reasons.
 - **Error Responses:**
   - `401 Unauthorized`: Invalid or expired token
   - `400 Bad Request`: Invalid query parameters
@@ -242,6 +243,7 @@ The API is organized around the following main resources, each corresponding to 
   "deleted_at": null
 }
 ```
+**Note:** `user_id` is not included in responses for security reasons.
 - **Error Responses:**
   - `401 Unauthorized`: Invalid or expired token
   - `404 Not Found`: Flashcard not found or doesn't belong to user
@@ -628,7 +630,7 @@ The API is organized around the following main resources, each corresponding to 
 - **Response Payload (200 OK):**
 ```json
 {
-  "review_id": "uuid",
+  "id": "uuid",
   "card_id": "uuid",
   "outcome": "correct",
   "previous_weight": 1.5,
@@ -636,6 +638,7 @@ The API is organized around the following main resources, each corresponding to 
   "reviewed_at": "2026-01-30T20:05:00Z"
 }
 ```
+**Note:** Uses `id` (not `review_id`) for consistency with other entities. `user_id` is not included in response.
 - **Error Responses:**
   - `401 Unauthorized`: Invalid or expired token
   - `400 Bad Request`: Invalid outcome (must be 'correct', 'incorrect', or 'skipped')
@@ -681,6 +684,7 @@ The API is organized around the following main resources, each corresponding to 
   "reviews": [
     {
       "id": "uuid",
+      "card_id": "uuid",
       "outcome": "correct",
       "previous_weight": 1.5,
       "new_weight": 1.2,
@@ -693,6 +697,7 @@ The API is organized around the following main resources, each corresponding to 
   "accuracy_rate": 80.0
 }
 ```
+**Note:** `user_id` is not included in review objects for security reasons.
 - **Error Responses:**
   - `401 Unauthorized`: Invalid or expired token
   - `404 Not Found`: Card not found or doesn't belong to user
@@ -820,9 +825,9 @@ X-RateLimit-Reset: 1706644800
   - Immutable after creation
 
 - **study_weight:**
-  - Must be greater than 0
+  - Must be between 0.5 and 5.0
   - Default: 1.0
-  - Validated via database CHECK constraint: `study_weight > 0`
+  - Validated via database CHECK constraint: `study_weight >= 0.5 AND study_weight <= 5.0`
   - Updated by study algorithm based on review outcomes
 
 #### 4.1.3 AI Generation Logs
@@ -854,12 +859,12 @@ X-RateLimit-Reset: 1706644800
   - Validated via database CHECK constraint
 
 - **previous_weight:**
-  - Must be greater than 0
-  - Validated via database CHECK constraint: `previous_weight > 0`
+  - Must be between 0.5 and 5.0
+  - Validated via database CHECK constraint: `previous_weight >= 0.5 AND previous_weight <= 5.0`
 
 - **new_weight:**
-  - Must be greater than 0
-  - Validated via database CHECK constraint: `new_weight > 0`
+  - Must be between 0.5 and 5.0
+  - Validated via database CHECK constraint: `new_weight >= 0.5 AND new_weight <= 5.0`
   - Calculated by study algorithm
 
 ### 4.2 Business Logic Implementation
@@ -900,11 +905,11 @@ X-RateLimit-Reset: 1706644800
 
 2. **Weight Adjustment Logic:**
    - **Correct outcome:** Decrease weight (card mastered)
-     - `new_weight = previous_weight * 0.8` (minimum: 0.1)
+     - `new_weight = max(0.5, previous_weight * 0.8)` (minimum: 0.5)
    - **Incorrect outcome:** Increase weight (needs more practice)
-     - `new_weight = previous_weight * 1.5` (maximum: 10.0)
-   - **Skipped outcome:** No weight change
-     - `new_weight = previous_weight`
+     - `new_weight = min(5.0, previous_weight * 1.5)` (maximum: 5.0)
+   - **Skipped outcome:** Slight weight increase (needs attention)
+     - `new_weight = min(5.0, previous_weight * 1.1)` (maximum: 5.0)
 
 3. **Review Recording:**
    - Create study_reviews record with outcome and weights

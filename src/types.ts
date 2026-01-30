@@ -3,29 +3,39 @@ import type { Tables, TablesInsert, TablesUpdate } from './db/database.types';
 // ============================================================================
 // Database Entity Aliases
 // ============================================================================
+// NOTE: All entity types inherit their fields from the database schema.
+// Common inherited fields include: id, user_id, created_at, updated_at, deleted_at
+// Refer to database.types.ts for complete field definitions.
 
 /**
  * User profile entity from database
+ * Inherited fields: id, language_preference, is_demo_deck_loaded, created_at, updated_at
  */
 export type ProfileEntity = Tables<'profiles'>;
 
 /**
  * Flashcard entity from database
+ * Inherited fields: id, user_id, front, back, tags, status, source, study_weight,
+ * generation_id, created_at, updated_at, deleted_at
  */
 export type FlashcardEntity = Tables<'flashcards'>;
 
 /**
  * AI generation log entity from database
+ * Inherited fields: id, user_id, input_length, cards_generated, cards_accepted,
+ * cards_rejected, cards_refined, timestamp
  */
 export type AIGenerationLogEntity = Tables<'ai_generation_logs'>;
 
 /**
  * Study review entity from database
+ * Inherited fields: id, user_id, card_id, outcome, previous_weight, new_weight, reviewed_at
  */
 export type StudyReviewEntity = Tables<'study_reviews'>;
 
 /**
  * Flashcard export view entity from database
+ * Inherited fields: id, front, back, tags, source, created_at, updated_at
  */
 export type FlashcardExportEntity = Tables<'view_flashcards_export'>;
 
@@ -188,19 +198,28 @@ export interface UpdateProfileRequest {
 
 /**
  * Flashcard DTO - direct mapping to database entity
+ * Includes all fields from FlashcardEntity (id, user_id, front, back, tags, status,
+ * source, study_weight, generation_id, created_at, updated_at, deleted_at)
  */
 export type FlashcardDTO = FlashcardEntity;
+
+/**
+ * Flashcard response DTO - excludes user_id for API responses
+ * Used in all flashcard API responses to avoid exposing internal user_id
+ */
+export type FlashcardResponseDTO = Omit<FlashcardDTO, 'user_id'>;
 
 /**
  * Paginated list of flashcards response
  */
 export interface FlashcardListResponse {
-  data: FlashcardDTO[];
+  data: FlashcardResponseDTO[];
   pagination: PaginationMeta;
 }
 
 /**
  * Create flashcard request (manual creation)
+ * Note: status defaults to 'active' for manual creation
  */
 export interface CreateFlashcardRequest {
   front: string;
@@ -322,6 +341,7 @@ export type AIRefineResponse = AICardSuggestion;
 
 /**
  * Accepted AI suggestion with user modifications
+ * Note: status can be set by user during acceptance (typically 'review' or 'active')
  */
 export interface AcceptedSuggestion {
   suggestion_id: string;
@@ -356,12 +376,14 @@ export interface AIGenerationLogSummary {
  * Accept AI suggestions response
  */
 export interface AIAcceptResponse {
-  created_cards: FlashcardDTO[];
+  created_cards: FlashcardResponseDTO[];
   generation_log: AIGenerationLogSummary;
 }
 
 /**
  * AI generation log DTO - direct mapping to database entity
+ * Includes all fields from AIGenerationLogEntity (id, user_id, input_length,
+ * cards_generated, cards_accepted, cards_rejected, cards_refined, timestamp)
  */
 export type AIGenerationLogDTO = AIGenerationLogEntity;
 
@@ -373,6 +395,14 @@ export interface AIGenerationMetrics {
   total_cards_generated: number;
   total_cards_accepted: number;
   acceptance_rate: number;
+}
+
+/**
+ * AI generation history query parameters
+ */
+export interface AIGenerationHistoryQuery {
+  limit?: number;
+  offset?: number;
 }
 
 /**
@@ -427,8 +457,28 @@ export interface SubmitStudyReviewRequest {
 
 /**
  * Study review DTO - direct mapping to database entity
+ * Includes all fields from StudyReviewEntity (id, user_id, card_id, outcome,
+ * previous_weight, new_weight, reviewed_at)
  */
 export type StudyReviewDTO = StudyReviewEntity;
+
+/**
+ * Study review response DTO - excludes user_id for API responses
+ * Used in card study history to avoid exposing internal user_id
+ */
+export type StudyReviewResponseDTO = Omit<StudyReviewDTO, 'user_id'>;
+
+/**
+ * Submit study review response - excludes user_id
+ */
+export interface SubmitStudyReviewResponse {
+  id: string;
+  card_id: string;
+  outcome: StudyOutcome;
+  previous_weight: number;
+  new_weight: number;
+  reviewed_at: string;
+}
 
 /**
  * Study statistics response
@@ -458,7 +508,7 @@ export interface StudyStatisticsQuery {
  */
 export interface CardStudyHistoryResponse {
   card_id: string;
-  reviews: StudyReviewDTO[];
+  reviews: StudyReviewResponseDTO[];
   total_reviews: number;
   correct_count: number;
   incorrect_count: number;
@@ -511,6 +561,7 @@ export type ErrorCode =
   | 'UNAUTHORIZED'
   | 'FORBIDDEN'
   | 'NOT_FOUND'
+  | 'CONFLICT'
   | 'VALIDATION_ERROR'
   | 'RATE_LIMIT_EXCEEDED'
   | 'SERVICE_UNAVAILABLE'
