@@ -3,14 +3,14 @@ import Layout from '../layouts/Layout.astro';
 import { DashboardView } from '../features/dashboard/components/DashboardView';
 import { Toaster } from '../components/ui/sonner';
 
-// TODO: Implement proper authentication check
-// const user = Astro.locals.user;
-// if (!user) {
-//   return Astro.redirect('/login');
-// }
+const { data: { user }, error } = await Astro.locals.supabase.auth.getUser();
+
+if (!user || error) {
+  return Astro.redirect('/auth');
+}
 ---
 
 <Layout title="Dashboard - Language Cards">
-  <DashboardView client:load />
+  <DashboardView client:load userEmail={user.email!} />
   <Toaster client:load />
 </Layout>

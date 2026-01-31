@@ -4,19 +4,13 @@ import { createErrorResponse, handleSupabaseAuthError } from '../../../../lib/ut
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request, locals, cookies }) => {
   try {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return createErrorResponse(
-        'UNAUTHORIZED',
-        'Missing or invalid authorization header',
-        401
-      );
-    }
-
     const authService = new AuthService(locals.supabase);
     await authService.signOut();
+
+    cookies.delete('sb-access-token', { path: '/' });
+    cookies.delete('sb-refresh-token', { path: '/' });
 
     return new Response(
       JSON.stringify({ message: 'Successfully signed out' }),

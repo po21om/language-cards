@@ -1,6 +1,14 @@
 ---
 import Welcome from "../components/Welcome.astro";
 import Layout from "../layouts/Layout.astro";
+
+const { data: { user }, error } = await Astro.locals.supabase.auth.getUser();
+
+if (user && !error) {
+  return Astro.redirect('/dashboard');
+}
+
+return Astro.redirect('/auth');
 ---
 
 <Layout>

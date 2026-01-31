@@ -6,7 +6,7 @@ import type { AuthSignUpRequest } from '../../../../types';
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request, locals, cookies }) => {
   try {
     const body: AuthSignUpRequest = await request.json();
 
@@ -26,6 +26,22 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const authService = new AuthService(locals.supabase);
     const result = await authService.signUp(validationResult.data.email, validationResult.data.password);
+
+    cookies.set('sb-access-token', result.session.access_token, {
+      path: '/',
+      httpOnly: true,
+      secure: import.meta.env.PROD,
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    cookies.set('sb-refresh-token', result.session.refresh_token, {
+      path: '/',
+      httpOnly: true,
+      secure: import.meta.env.PROD,
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 30,
+    });
 
     return new Response(JSON.stringify(result), {
       status: 201,

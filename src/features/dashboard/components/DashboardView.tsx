@@ -8,9 +8,14 @@ import {
   CreateCardModal,
 } from './index';
 import { DeleteConfirmDialog } from './DeleteConfirmDialog';
+import { UserHeader } from '@/components/UserHeader';
 import type { FlashcardViewModel } from '../types';
 
-export function DashboardView() {
+interface DashboardViewProps {
+  userEmail: string;
+}
+
+export function DashboardView({ userEmail }: DashboardViewProps) {
   const {
     cards,
     pagination,
@@ -84,11 +89,14 @@ export function DashboardView() {
   return (
     <div className="container mx-auto space-y-8 py-8">
       <div className="flex flex-col gap-6">
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Manage your flashcards and start studying
-          </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <p className="text-muted-foreground">
+              Manage your flashcards and start studying
+            </p>
+          </div>
+          <UserHeader userEmail={userEmail} />
         </div>
 
         <PrimaryActions
