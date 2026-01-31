@@ -1,10 +1,18 @@
 ---
-import Layout from '@/layouts/Layout.astro';
-import GenerationView from '@/features/generation/components/GenerationView';
-import { Toaster } from '@/components/ui/sonner';
+import Layout from '../layouts/Layout.astro';
+import GenerationView from '../features/generation/components/GenerationView';
+import { Toaster } from '../components/ui/sonner';
+
+const { data: { user }, error } = await Astro.locals.supabase.auth.getUser();
+
+if (!user || error) {
+  return Astro.redirect('/auth');
+}
+
+export const prerender = false;
 ---
 
 <Layout title="Generate Flashcards - Language Cards">
-  <GenerationView client:load />
+  <GenerationView client:load userEmail={user.email!} />
   <Toaster client:load />
 </Layout>

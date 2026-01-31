@@ -13,6 +13,6 @@ export const prerender = false;
 ---
 
 <Layout title="Study Session - Language Cards">
-  <StudyView client:load />
+  <StudyView client:load userEmail={user.email!} />
   <Toaster client:load />
 </Layout>
