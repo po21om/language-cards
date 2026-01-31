@@ -9,6 +9,7 @@ import {
 } from './index';
 import { DeleteConfirmDialog } from './DeleteConfirmDialog';
 import { UserHeader } from '@/components/UserHeader';
+import { NavigationBar } from '@/components/NavigationBar';
 import type { FlashcardViewModel } from '../types';
 
 interface DashboardViewProps {
@@ -45,6 +46,10 @@ export function DashboardView({ userEmail }: DashboardViewProps) {
 
   const handleNavigateToGenerate = () => {
     window.location.href = '/generate';
+  };
+
+  const handleNavigateToTrash = () => {
+    window.location.href = '/trash';
   };
 
   const handleModalSubmit = async (data: any) => {
@@ -87,7 +92,9 @@ export function DashboardView({ userEmail }: DashboardViewProps) {
   };
 
   return (
-    <div className="container mx-auto space-y-8 py-8">
+    <>
+      <NavigationBar currentPath="/dashboard" />
+      <div className="container mx-auto space-y-8 py-8">
       <div className="flex flex-col gap-6">
         <div className="flex items-start justify-between">
           <div>
@@ -103,6 +110,7 @@ export function DashboardView({ userEmail }: DashboardViewProps) {
           onStartStudy={handleNavigateToStudy}
           onGenerateWithAI={handleNavigateToGenerate}
           onAddCard={() => openModal()}
+          onViewTrash={handleNavigateToTrash}
         />
 
         <FilterControls
@@ -149,5 +157,6 @@ export function DashboardView({ userEmail }: DashboardViewProps) {
         cardFront={deleteConfirm.card?.front || ''}
       />
     </div>
+    </>
   );
 }

@@ -1,0 +1,16 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { TrashView } from '../features/trash/components/TrashView';
+import { Toaster } from '../components/ui/sonner';
+
+const { data: { user }, error } = await Astro.locals.supabase.auth.getUser();
+
+if (!user || error) {
+  return Astro.redirect('/auth');
+}
+---
+
+<Layout title="Trash - Language Cards">
+  <TrashView client:load userEmail={user.email!} />
+  <Toaster client:load />
+</Layout>
