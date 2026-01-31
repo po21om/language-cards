@@ -33,7 +33,7 @@ export function SettingsView({ userEmail }: SettingsViewProps) {
           <ArrowLeft className="h-4 w-4" />
           Back to Dashboard
         </Button>
-        <UserHeader userEmail={userEmail} />
+        <UserHeader userEmail={userEmail} isOnSettingsPage={true} />
       </div>
 
       <div className="flex flex-col gap-6">
