@@ -25,3 +25,7 @@ pnpm-debug.log*
 
 # local test scripts
 test-scripts/
+
+# test reports
+/playwright-report/
+/test-results/
