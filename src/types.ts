@@ -176,6 +176,14 @@ export interface DeleteAccountResponse {
   message: string;
 }
 
+/**
+ * Auth form view model for managing form state
+ */
+export interface AuthFormViewModel {
+  email: string;
+  password: string;
+}
+
 // ============================================================================
 // Profile DTOs and Command Models
 // ============================================================================

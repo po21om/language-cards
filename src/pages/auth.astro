@@ -1,0 +1,15 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { AuthView } from '@/features/auth/components/AuthView';
+
+// Redirect to dashboard if already authenticated
+// TODO: Implement proper authentication check
+// const user = Astro.locals.user;
+// if (user) {
+//   return Astro.redirect('/dashboard');
+// }
+---
+
+<Layout title="Authentication - Language Cards">
+  <AuthView client:load />
+</Layout>
