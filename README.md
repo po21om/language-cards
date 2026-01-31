@@ -44,13 +44,15 @@ Students and language learners who want to focus their energy on studying rather
 - **[React](https://react.dev/)** v19.1.1 - UI library for building interactive components
 - **[TypeScript](https://www.typescriptlang.org/)** - Type-safe JavaScript development
 - **[Tailwind CSS](https://tailwindcss.com/)** v4.1.13 - Utility-first CSS framework
+- **[Supabase](https://supabase.io/)** - Open source Firebase alternative for database and authentication
 
 ### UI Components & Styling
 
-- **[Radix UI](https://www.radix-ui.com/)** - Accessible component primitives
+- **[Radix UI](https://www.radix-ui.com/)** - Accessible component primitives for building high-quality design systems
 - **[Lucide React](https://lucide.dev/)** - Beautiful, consistent icon set
 - **[class-variance-authority](https://cva.style/)** - Component variant management
 - **[tailwind-merge](https://github.com/dcastil/tailwind-merge)** - Utility class merging
+- **[Sonner](https://sonner.emilkowal.ski/)** - Toast notifications for React
 
 ### Development Tools
 
@@ -83,11 +85,20 @@ npm install
 
 3. **Set up environment variables:**
 
+Create a `.env` file by copying the example file:
+
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` file with your configuration (API keys, database connection, etc.)
+Next, add your Supabase and OpenRouter credentials to the `.env` file. You can get these from your Supabase project settings and OpenRouter account.
+
+```
+SUPABASE_URL="your-supabase-url"
+SUPABASE_KEY="your-supabase-anon-key"
+OPENROUTER_API_KEY="your-openrouter-api-key"
+OPENROUTER_MODEL="your-model-of-choice"
+```
 
 4. **Run the development server:**
 
@@ -120,6 +131,8 @@ npm run preview
 | `npm run lint` | Run ESLint to check code quality |
 | `npm run lint:fix` | Automatically fix ESLint issues |
 | `npm run format` | Format code with Prettier |
+| `npm run test:unit` | Run unit tests with Vitest |
+| `npm run test:e2e` | Run end-to-end tests with Playwright |
 
 ## Project Scope
 
@@ -145,14 +158,14 @@ npm run preview
 - Versioned scheduler API
 
 #### User System & Security
-- Login/Password authentication (minimum 8 characters, letters + numbers)
-- No email verification (simplified MVP signup)
-- Account deletion with immediate data purge
-- GDPR-compliant data handling
+- **Authentication:** Secure sign-up and sign-in functionality provided by Supabase Auth.
+- **Email Verification:** New user accounts require email verification to ensure security.
+- **Password Policy:** Passwords must be at least 8 characters long and contain both letters and numbers.
+- **Account Deletion:** Users can permanently delete their accounts and all associated data.
+- **GDPR Compliance:** All data handling is designed to be GDPR-compliant.
 
 #### Platform Features
 - Desktop browser support: Chrome and Firefox
-- Bilingual UI: English and Polish (architecture ready for expansion)
 - CSV and JSON export functionality
 - Optional demo deck for new users
 - WCAG AA Level A accessibility compliance
@@ -165,6 +178,7 @@ npm run preview
 - ❌ Third-party integrations (LMS, Quizlet)
 - ❌ Native mobile applications
 - ❌ AI usage quotas or rate limiting
+- ❌ Bilingual UI: English and Polish (architecture ready for expansion)
 
 ### Constraints
 
@@ -193,8 +207,31 @@ The MVP will be validated against the following metrics:
 ### Language Support
 
 - 🇬🇧 English
-- 🇵🇱 Polish
 
 ## License
 
-To be determined
+Flashcards AI is released under the MIT License.
+
+```
+MIT License
+
+Copyright (c) 2026 Flashcards AI contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
