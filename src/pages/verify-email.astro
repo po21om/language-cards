@@ -1,0 +1,42 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { EmailVerificationBanner } from '@/features/auth/components/EmailVerificationBanner';
+
+const { data: { user }, error } = await Astro.locals.supabase.auth.getUser();
+
+if (!user || error) {
+  return Astro.redirect('/auth');
+}
+
+const email = user.email || 'your email';
+---
+
+<Layout title="Verify Email - Language Cards">
+  <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+    <div class="w-full max-w-2xl">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+        <h1 class="text-2xl font-bold text-center mb-6">
+          Email Verification
+        </h1>
+        
+        <EmailVerificationBanner 
+          client:load 
+          email={email}
+        />
+
+        <div class="mt-6 text-center">
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            Note: Email verification is not currently required for the MVP. 
+            This page is a placeholder for future implementation.
+          </p>
+          <a 
+            href="/dashboard" 
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            Continue to Dashboard →
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>

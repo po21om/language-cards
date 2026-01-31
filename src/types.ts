@@ -182,6 +182,7 @@ export interface DeleteAccountResponse {
 export interface AuthFormViewModel {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 // ============================================================================
