@@ -1,5 +1,5 @@
-import type { SupabaseClient as BaseSupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '../../db/database.types';
+import type { SupabaseClient as BaseSupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "../../db/database.types";
 import type {
   AIGenerateResponse,
   AICardSuggestion,
@@ -11,58 +11,50 @@ import type {
   FlashcardResponseDTO,
   FlashcardEntity,
   AIGenerationLogEntity,
-} from '../../types';
-import type {
-  OpenRouterRequest,
-  OpenRouterResponse,
-  OpenRouterErrorResponse,
-  AIServiceConfig,
-  ParsedFlashcardSuggestion,
-} from './types/ai-service.types';
+} from "../../types";
+import type { AIServiceConfig, ParsedFlashcardSuggestion } from "./types/ai-service.types";
+import { OpenRouterService } from "./openrouter.service";
 
 type SupabaseClient = BaseSupabaseClient<Database>;
 
 export class ServiceUnavailableError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'ServiceUnavailableError';
+    this.name = "ServiceUnavailableError";
   }
 }
 
 export class AIGenerationService {
-  private readonly apiKey: string;
+  private readonly openRouterService: OpenRouterService;
   private readonly model: string;
-  private readonly baseUrl: string;
-  private readonly timeout: number;
-  private readonly retryAttempts: number;
   private readonly temperature: number;
   private readonly maxTokens: number;
   private readonly supabase: SupabaseClient;
 
   constructor(config: AIServiceConfig, supabase: SupabaseClient) {
-    this.apiKey = config.apiKey;
-    this.model = config.model || 'openai/gpt-4';
-    this.baseUrl = config.baseUrl || 'https://openrouter.ai/api/v1';
-    this.timeout = config.timeout || 30000;
-    this.retryAttempts = config.retryAttempts || 2;
+    this.openRouterService = new OpenRouterService();
+    this.model = config.model || "openai/gpt-4";
     this.temperature = config.temperature || 0.7;
     this.maxTokens = config.maxTokens || 2000;
     this.supabase = supabase;
   }
 
-  async generateFlashcards(
-    text: string,
-    targetCount: number,
-    userId: string
-  ): Promise<AIGenerateResponse> {
+  async generateFlashcards(text: string, targetCount: number, userId: string): Promise<AIGenerateResponse> {
     const sanitizedText = this.sanitizeTextInput(text);
-    const prompt = this.buildGenerationPrompt(sanitizedText, targetCount);
+    const systemPrompt = `You are a flashcard generation assistant. Generate high-quality flashcards from the provided text. Each flashcard should have a clear question (front) and a concise answer (back). Include relevant tags for categorization. Return your response as a JSON array of objects with "front", "back", and "tags" fields.`;
+    const userPrompt = `Generate ${targetCount} flashcards from the following text:\n\n${sanitizedText}\n\nReturn a JSON array of flashcard objects.`;
 
-    const aiResponse = await this.callOpenRouter(prompt);
+    const aiResponse = await this.openRouterService.chatCompletion({
+      model: this.model,
+      systemMessage: systemPrompt,
+      userMessage: userPrompt,
+      temperature: this.temperature,
+      max_tokens: this.maxTokens,
+    });
     const suggestions = this.parseGenerationResponse(aiResponse);
 
     const { data: generationLog, error: logError } = await this.supabase
-      .from('ai_generation_logs')
+      .from("ai_generation_logs")
       .insert({
         user_id: userId,
         input_length: sanitizedText.length,
@@ -75,7 +67,7 @@ export class AIGenerationService {
       .single();
 
     if (logError || !generationLog) {
-      throw new Error('Failed to create generation log');
+      throw new Error("Failed to create generation log");
     }
 
     const suggestionsWithIds: AICardSuggestion[] = suggestions.map((s) => ({
@@ -96,13 +88,16 @@ export class AIGenerationService {
 
   async refineSuggestion(request: AIRefineRequest): Promise<AIRefineResponse> {
     const sanitizedInstruction = this.sanitizeTextInput(request.refinement_instruction);
-    const prompt = this.buildRefinementPrompt(
-      request.front,
-      request.back,
-      sanitizedInstruction
-    );
+    const systemPrompt = `You are a flashcard refinement assistant. Refine the provided flashcard according to the user's instructions. Return your response as a JSON object with "front", "back", and "tags" fields.`;
+    const userPrompt = `Refine this flashcard:\n\nFront: ${request.front}\nBack: ${request.back}\n\nInstruction: ${sanitizedInstruction}\n\nReturn a JSON object with the refined flashcard.`;
 
-    const aiResponse = await this.callOpenRouter(prompt);
+    const aiResponse = await this.openRouterService.chatCompletion({
+      model: this.model,
+      systemMessage: systemPrompt,
+      userMessage: userPrompt,
+      temperature: this.temperature,
+      max_tokens: this.maxTokens,
+    });
     const refined = this.parseRefinementResponse(aiResponse);
 
     return {
@@ -113,18 +108,15 @@ export class AIGenerationService {
     };
   }
 
-  async acceptSuggestions(
-    request: AIAcceptRequest,
-    userId: string
-  ): Promise<AIAcceptResponse> {
+  async acceptSuggestions(request: AIAcceptRequest, userId: string): Promise<AIAcceptResponse> {
     const { data: log, error: logError } = await this.supabase
-      .from('ai_generation_logs')
-      .select('id, user_id')
-      .eq('id', request.generation_id)
+      .from("ai_generation_logs")
+      .select("id, user_id")
+      .eq("id", request.generation_id)
       .single();
 
     if (logError || !log || log.user_id !== userId) {
-      throw new Error('Generation log not found');
+      throw new Error("Generation log not found");
     }
 
     const flashcardsToInsert = request.accepted_suggestions.map((s) => ({
@@ -133,32 +125,32 @@ export class AIGenerationService {
       back: s.back,
       tags: s.tags,
       status: s.status,
-      source: 'ai' as const,
+      source: "ai" as const,
       generation_id: request.generation_id,
     }));
 
     const { data: createdCards, error: insertError } = await this.supabase
-      .from('flashcards')
+      .from("flashcards")
       .insert(flashcardsToInsert)
       .select();
 
     if (insertError || !createdCards) {
-      throw new Error('Failed to create flashcards');
+      throw new Error("Failed to create flashcards");
     }
 
     const { data: updatedLog, error: updateError } = await this.supabase
-      .from('ai_generation_logs')
+      .from("ai_generation_logs")
       .update({
         cards_accepted: request.accepted_suggestions.length,
         cards_rejected: request.rejected_suggestions.length,
         cards_refined: request.refined_count,
       })
-      .eq('id', request.generation_id)
+      .eq("id", request.generation_id)
       .select()
       .single();
 
     if (updateError || !updatedLog) {
-      throw new Error('Failed to update generation log');
+      throw new Error("Failed to update generation log");
     }
 
     const responseCards: FlashcardResponseDTO[] = createdCards.map((card: FlashcardEntity) => {
@@ -178,32 +170,32 @@ export class AIGenerationService {
     };
   }
 
-  async getGenerationHistory(
-    userId: string,
-    limit: number,
-    offset: number
-  ): Promise<AIGenerationHistoryResponse> {
-    const { data: logs, error: logsError, count } = await this.supabase
-      .from('ai_generation_logs')
-      .select('*', { count: 'exact' })
-      .eq('user_id', userId)
-      .order('timestamp', { ascending: false })
+  async getGenerationHistory(userId: string, limit: number, offset: number): Promise<AIGenerationHistoryResponse> {
+    const {
+      data: logs,
+      error: logsError,
+      count,
+    } = await this.supabase
+      .from("ai_generation_logs")
+      .select("*", { count: "exact" })
+      .eq("user_id", userId)
+      .order("timestamp", { ascending: false })
       .range(offset, offset + limit - 1);
 
     if (logsError) {
-      throw new Error('Failed to retrieve generation history');
+      throw new Error("Failed to retrieve generation history");
     }
 
     const total = count || 0;
     const hasMore = offset + limit < total;
 
     const { data: allLogs, error: metricsError } = await this.supabase
-      .from('ai_generation_logs')
-      .select('cards_generated, cards_accepted')
-      .eq('user_id', userId);
+      .from("ai_generation_logs")
+      .select("cards_generated, cards_accepted")
+      .eq("user_id", userId);
 
     if (metricsError) {
-      throw new Error('Failed to calculate metrics');
+      throw new Error("Failed to calculate metrics");
     }
 
     const totalGenerated = allLogs?.reduce((sum: number, log) => sum + log.cards_generated, 0) || 0;
@@ -230,114 +222,14 @@ export class AIGenerationService {
   private sanitizeTextInput(text: string): string {
     return text
       .trim()
-      .replace(/[\x00-\x1F\x7F]/g, '')
-      .replace(/\s+/g, ' ')
+      .replace(/[\x00-\x1F\x7F]/g, "")
+      .replace(/\s+/g, " ")
       .substring(0, 1800);
   }
 
-  private buildGenerationPrompt(text: string, targetCount: number): OpenRouterRequest {
-    const systemPrompt = `You are a flashcard generation assistant. Generate high-quality flashcards from the provided text. Each flashcard should have a clear question (front) and a concise answer (back). Include relevant tags for categorization. Return your response as a JSON array of objects with "front", "back", and "tags" fields.`;
-
-    const userPrompt = `Generate ${targetCount} flashcards from the following text:\n\n${text}\n\nReturn a JSON array of flashcard objects.`;
-
-    return {
-      model: this.model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: this.temperature,
-      max_tokens: this.maxTokens,
-      response_format: { type: 'json_object' },
-    };
-  }
-
-  private buildRefinementPrompt(
-    front: string,
-    back: string,
-    instruction: string
-  ): OpenRouterRequest {
-    const systemPrompt = `You are a flashcard refinement assistant. Refine the provided flashcard according to the user's instructions. Return your response as a JSON object with "front", "back", and "tags" fields.`;
-
-    const userPrompt = `Refine this flashcard:\n\nFront: ${front}\nBack: ${back}\n\nInstruction: ${instruction}\n\nReturn a JSON object with the refined flashcard.`;
-
-    return {
-      model: this.model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: this.temperature,
-      max_tokens: this.maxTokens,
-      response_format: { type: 'json_object' },
-    };
-  }
-
-  private async callOpenRouter(request: OpenRouterRequest): Promise<string> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
-
-    let lastError: Error | null = null;
-
-    for (let attempt = 0; attempt <= this.retryAttempts; attempt++) {
-      try {
-        const response = await fetch(`${this.baseUrl}/chat/completions`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.apiKey}`,
-            'HTTP-Referer': 'https://language-cards.app',
-            'X-Title': 'Language Cards',
-          },
-          body: JSON.stringify(request),
-          signal: controller.signal,
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-          const errorData: OpenRouterErrorResponse = await response.json();
-          console.error('OpenRouter API error:', {
-            status: response.status,
-            statusText: response.statusText,
-            error: errorData,
-          });
-          throw new ServiceUnavailableError(
-            errorData.error?.message || 'AI service request failed'
-          );
-        }
-
-        const data: OpenRouterResponse = await response.json();
-
-        if (!data.choices || data.choices.length === 0) {
-          throw new ServiceUnavailableError('No response from AI service');
-        }
-
-        return data.choices[0].message.content;
-      } catch (error) {
-        lastError = error as Error;
-
-        if (error instanceof ServiceUnavailableError) {
-          throw error;
-        }
-
-        if (attempt === this.retryAttempts) {
-          break;
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
-      }
-    }
-
-    clearTimeout(timeoutId);
-    throw new ServiceUnavailableError(
-      lastError?.message || 'AI service temporarily unavailable'
-    );
-  }
-
-  private parseGenerationResponse(response: string): ParsedFlashcardSuggestion[] {
+  private parseGenerationResponse(response: string | object): ParsedFlashcardSuggestion[] {
     try {
-      const parsed = JSON.parse(response);
+      const parsed = typeof response === "string" ? JSON.parse(response) : response;
 
       if (parsed.flashcards && Array.isArray(parsed.flashcards)) {
         return parsed.flashcards;
@@ -347,23 +239,23 @@ export class AIGenerationService {
         return parsed;
       }
 
-      throw new Error('Invalid response format');
+      throw new Error("Invalid response format");
     } catch (error) {
-      throw new ServiceUnavailableError('Failed to parse AI response');
+      throw new ServiceUnavailableError("Failed to parse AI response");
     }
   }
 
-  private parseRefinementResponse(response: string): ParsedFlashcardSuggestion {
+  private parseRefinementResponse(response: string | object): ParsedFlashcardSuggestion {
     try {
-      const parsed = JSON.parse(response);
+      const parsed = typeof response === "string" ? JSON.parse(response) : response;
 
       if (parsed.front && parsed.back) {
         return parsed;
       }
 
-      throw new Error('Invalid response format');
+      throw new Error("Invalid response format");
     } catch (error) {
-      throw new ServiceUnavailableError('Failed to parse AI response');
+      throw new ServiceUnavailableError("Failed to parse AI response");
     }
   }
 }
