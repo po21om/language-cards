@@ -38,16 +38,10 @@ const AcceptSchema = z.object({
 
 export const POST = async (context: APIContext) => {
   try {
-    const authHeader = context.request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return unauthorizedResponse();
-    }
-
-    const token = authHeader.substring(7);
-    const { data: { user }, error: authError } = await context.locals.supabase.auth.getUser(token);
+    const { data: { user }, error: authError } = await context.locals.supabase.auth.getUser();
 
     if (authError || !user) {
-      return unauthorizedResponse('Invalid or expired token');
+      return unauthorizedResponse('Invalid or expired authentication token');
     }
 
     const body = await context.request.json();

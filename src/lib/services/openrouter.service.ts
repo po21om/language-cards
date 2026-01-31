@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from "axios";
+import axios, { type AxiosInstance } from "axios";
 
 /**
  * OpenRouter Service
@@ -103,14 +103,18 @@ export interface ChatCompletionParams {
   /**
    * Optional response format specification for structured outputs
    */
-  response_format?: {
-    type: "json_schema";
-    json_schema: {
-      name: string;
-      strict?: boolean;
-      schema: object;
-    };
-  };
+  response_format?:
+    | {
+        type: "json_object";
+      }
+    | {
+        type: "json_schema";
+        json_schema: {
+          name: string;
+          strict?: boolean;
+          schema: object;
+        };
+      };
 
   /**
    * Temperature for response randomness (0.0 - 2.0)
@@ -132,12 +136,12 @@ export class OpenRouterService {
   private readonly apiKey: string;
   private readonly httpClient: AxiosInstance;
 
-  constructor() {
-    this.apiKey = process.env.OPENROUTER_API_KEY || "";
-
-    if (!this.apiKey) {
-      throw new Error("OPENROUTER_API_KEY is not set in environment variables.");
+  constructor(apiKey: string) {
+    if (!apiKey) {
+      throw new Error("OPENROUTER_API_KEY is required.");
     }
+
+    this.apiKey = apiKey;
 
     this.httpClient = axios.create({
       baseURL: "https://openrouter.ai/api/v1",

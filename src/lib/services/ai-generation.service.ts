@@ -32,7 +32,7 @@ export class AIGenerationService {
   private readonly supabase: SupabaseClient;
 
   constructor(config: AIServiceConfig, supabase: SupabaseClient) {
-    this.openRouterService = new OpenRouterService();
+    this.openRouterService = new OpenRouterService(config.apiKey);
     this.model = config.model || "openai/gpt-4";
     this.temperature = config.temperature || 0.7;
     this.maxTokens = config.maxTokens || 2000;
@@ -50,8 +50,9 @@ export class AIGenerationService {
       userMessage: userPrompt,
       temperature: this.temperature,
       max_tokens: this.maxTokens,
+      response_format: { type: "json_object" },
     });
-    const suggestions = this.parseGenerationResponse(aiResponse);
+    const suggestions = this.parseGenerationResponse(aiResponse as string | object);
 
     const { data: generationLog, error: logError } = await this.supabase
       .from("ai_generation_logs")
@@ -97,8 +98,9 @@ export class AIGenerationService {
       userMessage: userPrompt,
       temperature: this.temperature,
       max_tokens: this.maxTokens,
+      response_format: { type: "json_object" },
     });
-    const refined = this.parseRefinementResponse(aiResponse);
+    const refined = this.parseRefinementResponse(aiResponse as string | object);
 
     return {
       suggestion_id: request.suggestion_id,

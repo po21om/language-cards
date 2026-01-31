@@ -48,7 +48,18 @@ export const POST = async (context: APIContext) => {
 
     const { message, model, useJsonSchema } = validationResult.data;
 
-    const openRouterService = new OpenRouterService();
+    const apiKey = import.meta.env.OPENROUTER_API_KEY;
+    if (!apiKey) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'OPENROUTER_API_KEY is not configured',
+      }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    const openRouterService = new OpenRouterService(apiKey);
 
     let result;
 
