@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Home, Sparkles, BookOpen, Trash2, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Logo } from '@/components/Logo';
 
 interface NavigationBarProps {
   currentPath?: string;
@@ -55,7 +56,9 @@ export function NavigationBar({ currentPath = '', userEmail }: NavigationBarProp
     <nav className="border-b bg-background" role="navigation" aria-label="Main navigation">
       <div className="container mx-auto">
         <div className="flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-6">
+            <Logo size="sm" theme="light" />
+            <Separator orientation="vertical" className="h-6" />
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentPath === item.href;

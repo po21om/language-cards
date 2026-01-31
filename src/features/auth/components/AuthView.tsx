@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AuthForm } from "./AuthForm";
 import { LanguageToggle } from "./LanguageToggle";
 import { useAuth } from "../hooks/useAuth";
+import { Logo } from "@/components/Logo";
 import type { AuthFormViewModel } from "@/types";
 
 export function AuthView() {
@@ -21,13 +22,20 @@ export function AuthView() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 py-8">
       <div className="w-full max-w-md">
         <div className="flex justify-end mb-4">
           <LanguageToggle />
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 space-y-6 border border-gray-100/80 dark:border-gray-700/60">
+          <div className="flex flex-col items-center gap-3 text-center">
+            <Logo size="md" theme="light" />
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
+              Learn faster. retain longer.
+            </p>
+          </div>
+
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-center mb-2">
               {mode === "signIn" ? "Sign In" : "Sign Up"}
