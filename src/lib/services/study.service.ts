@@ -130,13 +130,21 @@ export class StudyService {
     let streak = 0;
     let expectedDate = todayMidnight;
 
+    // Check if the most recent study day is today or yesterday
+    if (uniqueDates[0] < todayMidnight - oneDayMs) {
+      // If the last study was before yesterday, there's no current streak
+      return 0;
+    } else if (uniqueDates[0] < todayMidnight) {
+      // If the last study was yesterday, start the streak check from yesterday
+      expectedDate = todayMidnight - oneDayMs;
+    }
+
     for (const dateMs of uniqueDates) {
       if (dateMs === expectedDate) {
         streak++;
         expectedDate -= oneDayMs;
-      } else if (dateMs === expectedDate + oneDayMs && streak === 0) {
-        continue;
       } else {
+        // If there's a gap, the streak is broken
         break;
       }
     }
