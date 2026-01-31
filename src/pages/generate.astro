@@ -1,0 +1,13 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import GenerationView from '@/features/generation/components/GenerationView';
+---
+
+<Layout title="Generate Flashcards">
+  <main class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-3xl font-bold mb-6">AI Flashcard Generation</h1>
+      <GenerationView client:load />
+    </div>
+  </main>
+</Layout>
