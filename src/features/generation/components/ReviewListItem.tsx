@@ -72,7 +72,7 @@ export function ReviewListItem({
               {suggestion.suggested_tags.map((tag, index) => (
                 <span
                   key={index}
-                  className="inline-flex items-center px-2 py-1 rounded-md bg-secondary text-secondary-foreground text-xs"
+                  className="inline-flex items-center rounded-full bg-secondary px-2 py-1 text-xs"
                 >
                   {tag}
                 </span>

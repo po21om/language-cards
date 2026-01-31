@@ -18,8 +18,13 @@ export function ReviewList({
 }: ReviewListProps) {
   if (suggestions.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">No flashcards could be generated from this text.</p>
+      <div className="flex min-h-[400px] items-center justify-center rounded-lg border border-dashed">
+        <div className="text-center">
+          <p className="text-lg font-medium">No flashcards generated</p>
+          <p className="text-sm text-muted-foreground">
+            No flashcards could be generated from this text. Try different content.
+          </p>
+        </div>
       </div>
     );
   }
