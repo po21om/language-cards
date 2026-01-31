@@ -4,8 +4,7 @@ import { Flashcard } from './Flashcard';
 import { FeedbackControls } from './FeedbackControls';
 import { SessionSummaryModal } from './SessionSummaryModal';
 import { Button } from '@/components/ui/button';
-import { UserHeader } from '@/components/UserHeader';
-import { ArrowLeft } from 'lucide-react';
+import { NavigationBar } from '@/components/NavigationBar';
 
 interface StudyViewProps {
   userEmail: string;
@@ -65,21 +64,10 @@ export function StudyView({ userEmail }: StudyViewProps) {
   }
 
   return (
-    <div className="container mx-auto space-y-8 py-8">
-      <div className="flex items-center justify-between">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => window.location.href = '/dashboard'}
-          className="gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Dashboard
-        </Button>
-        <UserHeader userEmail={userEmail} />
-      </div>
-
-      <div className="mx-auto max-w-4xl space-y-8">
+    <>
+      <NavigationBar currentPath="/study" userEmail={userEmail} />
+      <div className="container mx-auto space-y-8 py-8">
+        <div className="mx-auto max-w-4xl space-y-8">
         <ProgressBar
           currentCardIndex={session.currentCardIndex}
           totalCards={session.totalCards}
@@ -106,5 +94,6 @@ export function StudyView({ userEmail }: StudyViewProps) {
         )}
       </div>
     </div>
+    </>
   );
 }

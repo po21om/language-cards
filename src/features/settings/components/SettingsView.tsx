@@ -2,10 +2,8 @@ import { useSettings } from '../hooks/useSettings';
 import { LanguageSelector } from './LanguageSelector';
 import { ExportButtons } from './ExportButtons';
 import { DeleteAccount } from './DeleteAccount';
-import { UserHeader } from '@/components/UserHeader';
-import { Button } from '@/components/ui/button';
+import { NavigationBar } from '@/components/NavigationBar';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft } from 'lucide-react';
 
 interface SettingsViewProps {
   userEmail: string;
@@ -22,21 +20,10 @@ export function SettingsView({ userEmail }: SettingsViewProps) {
   } = useSettings();
 
   return (
-    <div className="container mx-auto space-y-8 py-8">
-      <div className="flex items-center justify-between">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => window.location.href = '/dashboard'}
-          className="gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Dashboard
-        </Button>
-        <UserHeader userEmail={userEmail} isOnSettingsPage={true} />
-      </div>
-
-      <div className="flex flex-col gap-6">
+    <>
+      <NavigationBar currentPath="/settings" userEmail={userEmail} />
+      <div className="container mx-auto space-y-8 py-8">
+        <div className="flex flex-col gap-6">
         <div>
           <h1 className="text-3xl font-bold">Settings</h1>
           <p className="text-muted-foreground">
@@ -78,5 +65,6 @@ export function SettingsView({ userEmail }: SettingsViewProps) {
         </div>
       </div>
     </div>
+    </>
   );
 }

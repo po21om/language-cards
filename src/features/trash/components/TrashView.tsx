@@ -1,7 +1,6 @@
 import { toast } from 'sonner';
 import { useTrashView } from '../hooks/useTrashView';
 import { TrashDataTable } from './TrashDataTable';
-import { UserHeader } from '@/components/UserHeader';
 import { NavigationBar } from '@/components/NavigationBar';
 
 interface TrashViewProps {
@@ -32,17 +31,14 @@ export function TrashView({ userEmail }: TrashViewProps) {
 
   return (
     <>
-      <NavigationBar currentPath="/trash" />
+      <NavigationBar currentPath="/trash" userEmail={userEmail} />
       <div className="container mx-auto space-y-8 py-8">
       <div className="flex flex-col gap-6">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Trash</h1>
-            <p className="text-muted-foreground">
-              Deleted cards are kept for 30 days before permanent removal
-            </p>
-          </div>
-          <UserHeader userEmail={userEmail} />
+        <div>
+          <h1 className="text-3xl font-bold">Trash</h1>
+          <p className="text-muted-foreground">
+            Deleted cards are kept for 30 days before permanent removal
+          </p>
         </div>
 
         {error && (

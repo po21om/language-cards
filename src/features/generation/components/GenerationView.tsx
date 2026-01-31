@@ -5,8 +5,7 @@ import { LoadingIndicator } from './LoadingIndicator';
 import { BulkActionToolbar } from './BulkActionToolbar';
 import { ReviewList } from './ReviewList';
 import { Button } from '@/components/ui/button';
-import { UserHeader } from '@/components/UserHeader';
-import { ArrowLeft } from 'lucide-react';
+import { NavigationBar } from '@/components/NavigationBar';
 import { useGenerationState } from '../hooks/useGenerationState';
 
 const MAX_CHARACTER_LIMIT = 1800;
@@ -52,21 +51,10 @@ export default function GenerationView({ userEmail }: GenerationViewProps) {
   };
 
   return (
-    <div className="container mx-auto space-y-8 py-8">
-      <div className="flex items-center justify-between">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => window.location.href = '/dashboard'}
-          className="gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Dashboard
-        </Button>
-        <UserHeader userEmail={userEmail} />
-      </div>
-
-      <div className="flex flex-col gap-6">
+    <>
+      <NavigationBar currentPath="/generate" userEmail={userEmail} />
+      <div className="container mx-auto space-y-8 py-8">
+        <div className="flex flex-col gap-6">
         <div>
           <h1 className="text-3xl font-bold">AI Flashcard Generation</h1>
           <p className="text-muted-foreground">
@@ -141,5 +129,6 @@ export default function GenerationView({ userEmail }: GenerationViewProps) {
         )}
       </div>
     </div>
+    </>
   );
 }

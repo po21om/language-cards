@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { useDashboardState } from '../hooks/useDashboardState';
 import {
-  PrimaryActions,
   FilterControls,
   FlashcardDataTable,
   CreateCardModal,
 } from './index';
 import { DeleteConfirmDialog } from './DeleteConfirmDialog';
-import { UserHeader } from '@/components/UserHeader';
 import { NavigationBar } from '@/components/NavigationBar';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 import type { FlashcardViewModel } from '../types';
 
 interface DashboardViewProps {
@@ -39,18 +39,6 @@ export function DashboardView({ userEmail }: DashboardViewProps) {
     isOpen: boolean;
     card: FlashcardViewModel | null;
   }>({ isOpen: false, card: null });
-
-  const handleNavigateToStudy = () => {
-    window.location.href = '/study';
-  };
-
-  const handleNavigateToGenerate = () => {
-    window.location.href = '/generate';
-  };
-
-  const handleNavigateToTrash = () => {
-    window.location.href = '/trash';
-  };
 
   const handleModalSubmit = async (data: any) => {
     try {
@@ -93,25 +81,21 @@ export function DashboardView({ userEmail }: DashboardViewProps) {
 
   return (
     <>
-      <NavigationBar currentPath="/dashboard" />
+      <NavigationBar currentPath="/dashboard" userEmail={userEmail} />
       <div className="container mx-auto space-y-8 py-8">
       <div className="flex flex-col gap-6">
-        <div className="flex items-start justify-between">
+        <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Dashboard</h1>
             <p className="text-muted-foreground">
               Manage your flashcards and start studying
             </p>
           </div>
-          <UserHeader userEmail={userEmail} />
+          <Button onClick={() => openModal()} size="lg">
+            <Plus className="mr-2 h-4 w-4" />
+            Add Card
+          </Button>
         </div>
-
-        <PrimaryActions
-          onStartStudy={handleNavigateToStudy}
-          onGenerateWithAI={handleNavigateToGenerate}
-          onAddCard={() => openModal()}
-          onViewTrash={handleNavigateToTrash}
-        />
 
         <FilterControls
           currentStatus={filters.status}
